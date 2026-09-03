@@ -1,5 +1,5 @@
 # JDK 8 + Maven 3.3.9 
-FROM maven:3.3.9-jdk-8
+FROM maven:3.8.8-eclipse-temurin-8
 
 # Prepare the folder
 RUN mkdir -p /app
