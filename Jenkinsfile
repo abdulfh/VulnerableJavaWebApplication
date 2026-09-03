@@ -12,15 +12,15 @@ pipeline{
         stage('SCA'){
             agent{
                 docker {
-                    image 'owasp/depedency-check:latest'
+                    image 'owasp/dependency-check'
                     args '-v /var/run/docker.sock:/var/run/docker.sock --entrypoint=' 
                 }
             }
             steps{
-                sh '/usr/share/depedency-check.sh --scan . --project "VulnerableJavaWebApplication" --format ALL'
-                archiveArtifacts artifacts: 'depedency-check-report.html'
-                archiveArtifacts artifacts: 'depedency-check-report.json'
-                archiveArtifacts artifacts: 'depedency-check-report.xml'
+                sh '/usr/share/dependency-check.sh --scan . --project "VulnerableJavaWebApplication" --format ALL'
+                archiveArtifacts artifacts: 'dependency-check-report.html'
+                archiveArtifacts artifacts: 'dependency-check-report.json'
+                archiveArtifacts artifacts: 'dependency-check-report.xml'
             }
         }
         stage('Build Docker Image'){
