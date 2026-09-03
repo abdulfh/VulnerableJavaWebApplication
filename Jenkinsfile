@@ -13,8 +13,7 @@ pipeline{
             agent{
                 docker {
                     image 'owasp/dependency-check'
-                    // Tambahkan volume cache data NVD agar scan lebih cepat
-                    args '-u root -v dependency-check-data:/usr/share/dependency-check/data --entrypoint=' 
+                    sh '/usr/share/dependency-check/bin/dependency-check.sh --scan . --project "VulnerableJavaWebApplication" --format ALL'
                 }
             }
             steps{
