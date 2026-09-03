@@ -13,7 +13,7 @@ pipeline{
             agent{
                 docker {
                     image 'owasp/dependency-check'
-                    sh '/usr/share/dependency-check/bin/dependency-check.sh --scan . --project "VulnerableJavaWebApplication" --format ALL'
+                    args '-u root --entrypoint='
                 }
             }
             steps{
