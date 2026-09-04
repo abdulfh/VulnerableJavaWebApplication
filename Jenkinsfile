@@ -22,8 +22,7 @@ pipeline{
                     /usr/share/dependency-check/bin/dependency-check.sh \
                       --scan . \
                       --project "VulnerableJavaWebApplication" \
-                      --format ALL \
-                      --noupdate
+                      --format ALL
                 '''
                 
                 archiveArtifacts artifacts: 'dependency-check-report.html'
