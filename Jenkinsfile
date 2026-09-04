@@ -23,7 +23,8 @@ pipeline{
                       --scan . \
                       --project "VulnerableJavaWebApplication" \
                       --format ALL \
-                      --noupdate
+                      --noupdate \
+                      --disableNvdData true
                 '''
                 
                 archiveArtifacts artifacts: 'dependency-check-report.html'
