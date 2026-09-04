@@ -9,27 +9,6 @@ pipeline{
                 sh 'mvn compile'
             }
         }
-        stage('SCA (OWASP Dependency-Check)') {
-            agent {
-                docker {
-                    image 'owasp/dependency-check:8.4.3'
-                    args '-u root -v dependency-check-data:/usr/share/dependency-check/data --entrypoint='
-                }
-            }
-            steps {
-                // Gunakan --noupdate untuk melewati pemanggilan/update NVD API
-                sh '''
-                    /usr/share/dependency-check/bin/dependency-check.sh \
-                      --scan . \
-                      --project "VulnerableJavaWebApplication" \
-                      --format ALL
-                '''
-                
-                archiveArtifacts artifacts: 'dependency-check-report.html'
-                archiveArtifacts artifacts: 'dependency-check-report.json'
-                archiveArtifacts artifacts: 'dependency-check-report.xml'
-            }
-        }
         stage('Build Docker Image'){
             agent{
                 docker {
@@ -39,6 +18,23 @@ pipeline{
             }
             steps{
                 sh 'docker build -t vulnerable-java-application:0.1 .'
+            }
+        }
+        stage('SCA (Trivy Image Scan)') {
+            agent {
+                docker {
+                    image 'aquasec/trivy:latest'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint='
+                }
+            }
+            steps {
+                // 1. Tampilkan hasil scan Image langsung di Console Output
+                sh 'trivy image --offline-scan vulnerable-java-application:0.1'
+
+                // 2. Buat laporan format HTML
+                sh 'trivy image --offline-scan --format template --template "@contrib/html.tpl" -o trivy-report.html vulnerable-java-application:0.1'
+                
+                archiveArtifacts artifacts: 'trivy-report.html'
             }
         }
         stage('Run Docker Image'){
