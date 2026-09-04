@@ -9,20 +9,28 @@ pipeline{
                 sh 'mvn compile'
             }
         }
-        stage('SCA (Trivy)'){
-            agent{
+        stage('SCA (OWASP Dependency-Check)') {
+            agent {
                 docker {
-                    image 'aquasec/trivy:latest'
-                    args '-u root --entrypoint='
+                    image 'owasp/dependency-check'
+                    // Mount volume cache agar data CVE tersimpan & tidak didownload ulang terus-menerus
+                    args '-u root -v dependency-check-data:/usr/share/dependency-check/data --entrypoint='
                 }
             }
-            steps{
-                // Scan direktori/dependensi aplikasi dan simpan laporan
-                sh 'trivy fs --offline-scan --format table -o trivy-report.txt .'
-                sh 'trivy fs --offline-scan --format json -o trivy-report.json .'                
+            steps {
+                // Menggunakan OSS Index & mematikan NVD agar tidak terkena API Key / rate limit error
+                sh '''
+                    /usr/share/dependency-check/bin/dependency-check.sh \
+                      --scan . \
+                      --project "VulnerableJavaWebApplication" \
+                      --format ALL \
+                      --nvdDisabled true \
+                      --ossindexAnalyzerEnabled true
+                '''
                 
-                archiveArtifacts artifacts: 'trivy-report.txt'
-                archiveArtifacts artifacts: 'trivy-report.json'
+                archiveArtifacts artifacts: 'dependency-check-report.html'
+                archiveArtifacts artifacts: 'dependency-check-report.json'
+                archiveArtifacts artifacts: 'dependency-check-report.xml'
             }
         }
         stage('Build Docker Image'){
