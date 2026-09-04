@@ -9,18 +9,20 @@ pipeline{
                 sh 'mvn compile'
             }
         }
-        stage('SCA'){
+        stage('SCA (Trivy)'){
             agent{
                 docker {
-                    image 'owasp/dependency-check'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint=' 
+                    image 'aquasec/trivy:latest'
+                    args '-u root --entrypoint='
                 }
             }
             steps{
-                sh '/usr/share/dependency-check/bin/dependency-check.sh --scan . --project "VulnerableJavaWebApplication" --format ALL'
-                archiveArtifacts artifacts: 'dependency-check-report.html'
-                archiveArtifacts artifacts: 'dependency-check-report.json'
-                archiveArtifacts artifacts: 'dependency-check-report.xml'
+                // Scan direktori/dependensi aplikasi dan simpan laporan
+                sh 'trivy fs --format table -o trivy-report.txt .'
+                sh 'trivy fs --format json -o trivy-report.json .'
+                
+                archiveArtifacts artifacts: 'trivy-report.txt'
+                archiveArtifacts artifacts: 'trivy-report.json'
             }
         }
         stage('Build Docker Image'){
