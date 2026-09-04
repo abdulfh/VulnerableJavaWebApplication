@@ -22,17 +22,6 @@ pipeline{
                 archiveArtifacts artifacts: 'trufflehogscan.json'
             }
         }
-        stage('Build Docker Image'){
-            agent{
-                docker {
-                    image 'docker:dind'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock' 
-                }
-            }
-            steps{
-                sh 'docker build -t vulnerable-java-application:0.1 .'
-            }
-        }
         stage('SCA (OWASP Dependency-Check)') {
             agent {
                 docker {
@@ -54,6 +43,17 @@ pipeline{
                 archiveArtifacts artifacts: 'dependency-check-report.html'
                 archiveArtifacts artifacts: 'dependency-check-report.json'
                 archiveArtifacts artifacts: 'dependency-check-report.xml'
+            }
+        }
+        stage('Build Docker Image'){
+            agent{
+                docker {
+                    image 'docker:dind'
+                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock' 
+                }
+            }
+            steps{
+                sh 'docker build -t vulnerable-java-application:0.1 .'
             }
         }
         stage('Run Docker Image'){
