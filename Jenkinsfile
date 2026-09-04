@@ -13,19 +13,17 @@ pipeline{
             agent {
                 docker {
                     image 'owasp/dependency-check'
-                    // Mount volume cache agar data CVE tersimpan & tidak didownload ulang terus-menerus
                     args '-u root -v dependency-check-data:/usr/share/dependency-check/data --entrypoint='
                 }
             }
             steps {
-                // Menggunakan OSS Index & mematikan NVD agar tidak terkena API Key / rate limit error
+                // Gunakan --noupdate untuk melewati pemanggilan/update NVD API
                 sh '''
                     /usr/share/dependency-check/bin/dependency-check.sh \
                       --scan . \
                       --project "VulnerableJavaWebApplication" \
                       --format ALL \
-                      --nvdDisabled true \
-                      --ossindexAnalyzerEnabled true
+                      --noupdate
                 '''
                 
                 archiveArtifacts artifacts: 'dependency-check-report.html'
