@@ -12,7 +12,7 @@ pipeline{
         stage('SCA (OWASP Dependency-Check)') {
             agent {
                 docker {
-                    image 'owasp/dependency-check'
+                    image 'owasp/dependency-check:8.4.3'
                     args '-u root -v dependency-check-data:/usr/share/dependency-check/data --entrypoint='
                 }
             }
@@ -23,8 +23,7 @@ pipeline{
                       --scan . \
                       --project "VulnerableJavaWebApplication" \
                       --format ALL \
-                      --noupdate \
-                      --disableNvdData true
+                      --noupdate
                 '''
                 
                 archiveArtifacts artifacts: 'dependency-check-report.html'
