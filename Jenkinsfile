@@ -28,12 +28,16 @@ pipeline{
                 }
             }
             steps {
-                // 1. Tampilkan hasil scan Image langsung di Console Output
+                // 1. Tampilkan hasil scan di Console Log
                 sh 'trivy image --offline-scan vulnerable-java-application:0.1'
 
-                // 2. Buat laporan format HTML
-                sh 'trivy image --offline-scan --format template --template "@contrib/html.tpl" -o trivy-report.html vulnerable-java-application:0.1'
+                // 2. Download template HTML resmi Trivy
+                sh 'wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -O html.tpl'
+
+                // 3. Generate laporan HTML menggunakan html.tpl lokal
+                sh 'trivy image --offline-scan --format template --template "@html.tpl" -o trivy-report.html vulnerable-java-application:0.1'
                 
+                // 4. Simpan laporan di Jenkins Artifacts
                 archiveArtifacts artifacts: 'trivy-report.html'
             }
         }
