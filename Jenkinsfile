@@ -18,8 +18,8 @@ pipeline{
             }
             steps{
                 // Scan direktori/dependensi aplikasi dan simpan laporan
-                sh 'trivy fs --format table -o trivy-report.txt .'
-                sh 'trivy fs --format json -o trivy-report.json .'
+                sh 'trivy fs --offline-scan --format table -o trivy-report.txt .'
+                sh 'trivy fs --offline-scan --format json -o trivy-report.json .'                
                 
                 archiveArtifacts artifacts: 'trivy-report.txt'
                 archiveArtifacts artifacts: 'trivy-report.json'
