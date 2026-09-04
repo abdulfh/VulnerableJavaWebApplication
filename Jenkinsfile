@@ -33,25 +33,27 @@ pipeline{
                 sh 'docker build -t vulnerable-java-application:0.1 .'
             }
         }
-        stage('SCA (Trivy Image Scan)') {
+        stage('SCA (OWASP Dependency-Check)') {
             agent {
                 docker {
-                    image 'aquasec/trivy:latest'
-                    args '-u root -v /var/run/docker.sock:/var/run/docker.sock --entrypoint='
+                    image 'owasp/dependency-check:latest'
+                    args '-u root -v dependency-check-data:/usr/share/dependency-check/data --entrypoint='
                 }
             }
             steps {
-                // 1. Tampilkan hasil scan di Console Log
-                sh 'trivy image --offline-scan vulnerable-java-application:0.1'
-
-                // 2. Download template HTML resmi Trivy
-                sh 'wget -q https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl -O html.tpl'
-
-                // 3. Generate laporan HTML menggunakan html.tpl lokal
-                sh 'trivy image --offline-scan --format template --template "@html.tpl" -o trivy-report.html vulnerable-java-application:0.1'
+                withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_KEY')]) {
+                    sh '''
+                        /usr/share/dependency-check/bin/dependency-check.sh \
+                          --scan . \
+                          --project "VulnerableJavaWebApplication" \
+                          --format ALL \
+                          --nvdApiKey "$NVD_KEY"
+                    '''
+                }
                 
-                // 4. Simpan laporan di Jenkins Artifacts
-                archiveArtifacts artifacts: 'trivy-report.html'
+                archiveArtifacts artifacts: 'dependency-check-report.html'
+                archiveArtifacts artifacts: 'dependency-check-report.json'
+                archiveArtifacts artifacts: 'dependency-check-report.xml'
             }
         }
         stage('Run Docker Image'){
